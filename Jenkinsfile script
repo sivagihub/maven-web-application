@@ -1,0 +1,26 @@
+node{
+properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')), [$class: 'JobLocalConfiguration', changeReasonComment: ''], pipelineTriggers([pollSCM('* * * * *')])])
+echo "The job name is : ${env.JOB_NAME}"
+echo "The Nod name is : ${env.NODE_NAME}"
+echo "The Build nbris : ${env.BUILD_NUMBER}"
+echo "The jenkin home directory is : ${JENKINS_HOME}"
+ 
+def mavenHome = tool name: "maven 3.8.6"
+stage('Checkoutcode'){
+git branch: 'development', credentialsId: '52b6e08e-bcfb-483e-b599-5f578f5b8171', url: 'https://github.com/sivagihub/maven-web-application.git'
+}
+
+stage('Build'){
+sh "${mavenHome}/bin/mvn clean package"    
+} 
+stage('Excute Sonar Qube Report'){
+sh "${mavenHome}/bin/mvn sonar:sonar"    
+} 
+stage('upload Artifacts into Nexus'){
+sh "${mavenHome}/bin/mvn deploy"    
+} 
+sshagent(['2f5a402d-0292-4c56-a41c-9c0d1d5f2825']) {
+sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@13.232.132.39:/opt/apache-tomcat-9.0.70/webapps/"
+}
+
+}
