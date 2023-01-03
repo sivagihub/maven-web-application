@@ -22,12 +22,13 @@ sh "${mavenHome}/bin/mvn sonar:sonar"
 stage('upload Artifacts into Nexus'){
 sh "${mavenHome}/bin/mvn deploy"    
 } 
+stage('DeployAppIntoTomcatServer'){
 sshagent(['2f5a402d-0292-4c56-a41c-9c0d1d5f2825']) {
 sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@13.232.132.39:/opt/apache-tomcat-9.0.70/webapps/"
 }
 
 }
-*/
+
 }//try closing
 catch(e){
 currentBuild.result = "FAILURE"
